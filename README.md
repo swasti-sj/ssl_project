@@ -161,7 +161,7 @@ Outputs:
 
 ## Team
 
-- Swasti (Lead Developer)
+- Swasti
 - Shivtej
 - Sai
 - Aditya
