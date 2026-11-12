@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Add Venue{% endblock %}
+
+{% block content %}
+<h1>Add New Venue</h1>
+
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="name">Venue Name *</label>
+        <input type="text" id="name" name="name" required class="input-field">
+    </div>
+    <div class="form-group">
+        <label for="location">Location *</label>
+        <input type="text" id="location" name="location" required class="input-field" placeholder="e.g. Block A, Ground Floor">
+    </div>
+    <div class="form-group">
+        <label for="capacity">Seating Capacity *</label>
+        <input type="number" id="capacity" name="capacity" required min="1" class="input-field">
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="has_projector" value="1"> Has Projector
+            </label>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="has_ac" value="1"> Has AC
+            </label>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Venue</button>
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

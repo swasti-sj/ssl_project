@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Home - Campus Events{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Campus Event Management</h1>
+    <p>Discover, register, and manage campus events all in one place.</p>
+    <a href="{{ url_for('events_list') }}" class="btn btn-primary">Browse Events</a>
+</section>
+
+<section class="stats-bar">
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_events }}</span>
+        <span class="stat-label">Events</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_participants }}</span>
+        <span class="stat-label">Participants</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_registrations }}</span>
+        <span class="stat-label">Registrations</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_venues }}</span>
+        <span class="stat-label">Venues</span>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Upcoming Events</h2>
+    <div class="events-grid">
+        {% for event in events[:6] %}
+        <div class="event-card">
+            <div class="event-card-header">
+                <span class="category-badge badge-{{ event.category }}">{{ event.category }}</span>
+                <span class="event-date">{{ event.event_date }}</span>
+            </div>
+            <h3>{{ event.title }}</h3>
+            <p class="event-meta">
+                📍 {{ event.venue_name or 'TBD' }} &middot;
+                🕐 {{ event.start_time }} - {{ event.end_time }}
+            </p>
+            <p class="event-organizer">Organized by {{ event.organizer }}</p>
+            <div class="event-card-footer">
+                <span class="reg-count">{{ event.registered_count }}/{{ event.max_participants }} registered</span>
+                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-small">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

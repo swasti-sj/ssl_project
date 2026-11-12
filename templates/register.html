@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Register - {{ event.title }}{% endblock %}
+
+{% block content %}
+<h1>Register for {{ event.title }}</h1>
+<p class="event-meta">{{ event.event_date }} &middot; {{ event.start_time }} - {{ event.end_time }}</p>
+
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="name">Full Name *</label>
+        <input type="text" id="name" name="name" required class="input-field">
+    </div>
+    <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required class="input-field">
+    </div>
+    <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" class="input-field">
+    </div>
+    <div class="form-group">
+        <label for="department">Department</label>
+        <select id="department" name="department" class="input-field">
+            <option value="">Select Department</option>
+            <option value="CSE">Computer Science</option>
+            <option value="ECE">Electronics</option>
+            <option value="EE">Electrical</option>
+            <option value="ME">Mechanical</option>
+            <option value="CE">Civil</option>
+            <option value="IT">Information Technology</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+    <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

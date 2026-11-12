@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<h1>Admin Panel</h1>
+
+<div class="admin-section">
+    <div class="section-header">
+        <h2>Events Management</h2>
+        <a href="{{ url_for('create_event') }}" class="btn btn-primary">+ New Event</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Category</th>
+                <th>Registrations</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.title }}</td>
+                <td>{{ event.event_date }}</td>
+                <td>{{ event.venue_name or 'TBD' }}</td>
+                <td><span class="category-badge badge-{{ event.category }}">{{ event.category }}</span></td>
+                <td>{{ event.registered_count }}/{{ event.max_participants }}</td>
+                <td>
+                    <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-small">Edit</a>
+                    <form method="POST" action="{{ url_for('delete_event', event_id=event.id) }}" style="display:inline">
+                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Delete this event?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="admin-section">
+    <div class="section-header">
+        <h2>Venues</h2>
+        <a href="{{ url_for('create_venue') }}" class="btn btn-primary">+ New Venue</a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Projector</th>
+                <th>AC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venue in venues %}
+            <tr>
+                <td>{{ venue.name }}</td>
+                <td>{{ venue.location }}</td>
+                <td>{{ venue.capacity }}</td>
+                <td>{{ '✓' if venue.has_projector else '✗' }}</td>
+                <td>{{ '✓' if venue.has_ac else '✗' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

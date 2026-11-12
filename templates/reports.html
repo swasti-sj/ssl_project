@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Reports - Campus Events{% endblock %}
+
+{% block content %}
+<h1>Summary Reports</h1>
+
+<div class="stats-bar">
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_events }}</span>
+        <span class="stat-label">Total Events</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_participants }}</span>
+        <span class="stat-label">Total Participants</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_registrations }}</span>
+        <span class="stat-label">Confirmed Registrations</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ report.total_venues }}</span>
+        <span class="stat-label">Available Venues</span>
+    </div>
+</div>
+
+<div class="reports-grid">
+    <div class="report-card">
+        <h3>Events by Category</h3>
+        <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+            <tbody>
+                {% for row in report.events_by_category %}
+                <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-card">
+        <h3>Top Events by Registrations</h3>
+        <table class="data-table">
+            <thead><tr><th>Event</th><th>Registrations</th></tr></thead>
+            <tbody>
+                {% for row in report.top_events %}
+                <tr><td>{{ row.title }}</td><td>{{ row.reg_count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-card">
+        <h3>Venue Utilization</h3>
+        <table class="data-table">
+            <thead><tr><th>Venue</th><th>Events Hosted</th></tr></thead>
+            <tbody>
+                {% for row in report.venue_usage %}
+                <tr><td>{{ row.name }}</td><td>{{ row.event_count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-card">
+        <h3>Registrations by Department</h3>
+        <table class="data-table">
+            <thead><tr><th>Department</th><th>Count</th></tr></thead>
+            <tbody>
+                {% for row in report.registrations_by_dept %}
+                <tr><td>{{ row.department }}</td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

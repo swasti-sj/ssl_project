@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if editing else 'Create' }} Event{% endblock %}
+
+{% block content %}
+<h1>{{ 'Edit' if editing else 'Create New' }} Event</h1>
+
+<form method="POST" class="form-card">
+    <div class="form-group">
+        <label for="title">Event Title *</label>
+        <input type="text" id="title" name="title" value="{{ data.get('title', '') }}" required class="input-field">
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4" class="input-field">{{ data.get('description', '') }}</textarea>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="event_date">Date *</label>
+            <input type="date" id="event_date" name="event_date" value="{{ data.get('event_date', '') }}" required class="input-field">
+        </div>
+        <div class="form-group">
+            <label for="start_time">Start Time *</label>
+            <input type="time" id="start_time" name="start_time" value="{{ data.get('start_time', '') }}" required class="input-field">
+        </div>
+        <div class="form-group">
+            <label for="end_time">End Time *</label>
+            <input type="time" id="end_time" name="end_time" value="{{ data.get('end_time', '') }}" required class="input-field">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="venue_id">Venue *</label>
+            <select id="venue_id" name="venue_id" required class="input-field">
+                <option value="">Select Venue</option>
+                {% for venue in venues %}
+                <option value="{{ venue.id }}" {{ 'selected' if data.get('venue_id') == venue.id }}>
+                    {{ venue.name }} ({{ venue.capacity }} seats)
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" class="input-field">
+                <option value="general" {{ 'selected' if data.get('category') == 'general' }}>General</option>
+                <option value="technical" {{ 'selected' if data.get('category') == 'technical' }}>Technical</option>
+                <option value="cultural" {{ 'selected' if data.get('category') == 'cultural' }}>Cultural</option>
+                <option value="workshop" {{ 'selected' if data.get('category') == 'workshop' }}>Workshop</option>
+                <option value="academic" {{ 'selected' if data.get('category') == 'academic' }}>Academic</option>
+                <option value="lecture" {{ 'selected' if data.get('category') == 'lecture' }}>Lecture</option>
+                <option value="sports" {{ 'selected' if data.get('category') == 'sports' }}>Sports</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="organizer">Organizer *</label>
+            <input type="text" id="organizer" name="organizer" value="{{ data.get('organizer', '') }}" required class="input-field">
+        </div>
+        <div class="form-group">
+            <label for="max_participants">Max Participants</label>
+            <input type="number" id="max_participants" name="max_participants" value="{{ data.get('max_participants', 100) }}" min="1" class="input-field">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ 'Update' if editing else 'Create' }} Event</button>
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

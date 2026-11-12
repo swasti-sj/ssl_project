@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} - Campus Events{% endblock %}
+
+{% block content %}
+<div class="event-detail">
+    <div class="event-detail-header">
+        <span class="category-badge badge-{{ event.category }}">{{ event.category }}</span>
+        <h1>{{ event.title }}</h1>
+        <p class="event-organizer">Organized by <strong>{{ event.organizer }}</strong></p>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-info">
+            <h3>Event Details</h3>
+            <p>{{ event.description }}</p>
+
+            <table class="info-table">
+                <tr><td><strong>Date</strong></td><td>{{ event.event_date }}</td></tr>
+                <tr><td><strong>Time</strong></td><td>{{ event.start_time }} - {{ event.end_time }}</td></tr>
+                <tr><td><strong>Venue</strong></td><td>{{ event.venue_name }} ({{ event.venue_location }})</td></tr>
+                <tr><td><strong>Capacity</strong></td><td>{{ event.venue_capacity }} seats</td></tr>
+                <tr><td><strong>Max Participants</strong></td><td>{{ event.max_participants }}</td></tr>
+                <tr><td><strong>Registered</strong></td><td>{{ registrations|length }}</td></tr>
+            </table>
+
+            <a href="{{ url_for('register_for_event', event_id=event.id) }}" class="btn btn-primary">Register Now</a>
+        </div>
+
+        <div class="detail-registrations">
+            <h3>Registered Participants ({{ registrations|length }})</h3>
+            {% if registrations %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                    <tr>
+                        <td>{{ reg.name }}</td>
+                        <td>{{ reg.department }}</td>
+                        <td><span class="status-{{ reg.status }}">{{ reg.status }}</span></td>
+                        <td>
+                            <form method="POST" action="{{ url_for('cancel_registration', event_id=event.id, participant_id=reg.id) }}" style="display:inline">
+                                <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Cancel this registration?')">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No registrations yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

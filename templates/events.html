@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Events - Campus Events{% endblock %}
+
+{% block content %}
+<h1>All Events</h1>
+
+<div class="search-filters">
+    <form method="GET" action="{{ url_for('events_list') }}" class="filter-form">
+        <input type="text" name="search" placeholder="Search events..." value="{{ search }}" class="input-field">
+        <select name="category" class="input-field">
+            <option value="">All Categories</option>
+            <option value="technical" {{ 'selected' if category == 'technical' }}>Technical</option>
+            <option value="cultural" {{ 'selected' if category == 'cultural' }}>Cultural</option>
+            <option value="workshop" {{ 'selected' if category == 'workshop' }}>Workshop</option>
+            <option value="academic" {{ 'selected' if category == 'academic' }}>Academic</option>
+            <option value="lecture" {{ 'selected' if category == 'lecture' }}>Lecture</option>
+            <option value="sports" {{ 'selected' if category == 'sports' }}>Sports</option>
+            <option value="general" {{ 'selected' if category == 'general' }}>General</option>
+        </select>
+        <input type="date" name="date_from" value="{{ date_from }}" class="input-field" placeholder="From date">
+        <input type="date" name="date_to" value="{{ date_to }}" class="input-field" placeholder="To date">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{{ url_for('events_list') }}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<div class="events-grid">
+    {% for event in events %}
+    <div class="event-card">
+        <div class="event-card-header">
+            <span class="category-badge badge-{{ event.category }}">{{ event.category }}</span>
+            <span class="event-date">{{ event.event_date }}</span>
+        </div>
+        <h3>{{ event.title }}</h3>
+        <p class="event-desc">{{ event.description[:120] }}{% if event.description|length > 120 %}...{% endif %}</p>
+        <p class="event-meta">
+            📍 {{ event.venue_name or 'TBD' }} &middot;
+            🕐 {{ event.start_time }} - {{ event.end_time }}
+        </p>
+        <p class="event-organizer">Organized by {{ event.organizer }}</p>
+        <div class="event-card-footer">
+            <span class="reg-count">{{ event.registered_count }}/{{ event.max_participants }} spots</span>
+            <div>
+                <a href="{{ url_for('register_for_event', event_id=event.id) }}" class="btn btn-small btn-primary">Register</a>
+                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-small">Details</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p class="no-results">No events found matching your criteria.</p>
+    {% endfor %}
+</div>
+{% endblock %}
