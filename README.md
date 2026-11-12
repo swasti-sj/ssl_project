@@ -162,7 +162,7 @@ Outputs:
 ## Team
 
 - Swasti (Lead Developer)
-- Team Member 2
-- Team Member 3
-- Team Member 4
-- Team Member 5
+- Shivtej
+- Sai
+- Aditya
+- Sumit
