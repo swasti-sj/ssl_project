@@ -91,11 +91,11 @@ python -m venv venv
 # activate it
 # Linux/Mac:
 source venv/bin/activate
-# Windows:
+# Windows (PowerShell):
 venv\Scripts\activate
 
 # install dependencies
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 # run the application
 python app.py
