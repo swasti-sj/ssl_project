@@ -8,26 +8,26 @@
 <form method="POST" class="form-card">
     <div class="form-group">
         <label for="name">Full Name *</label>
-        <input type="text" id="name" name="name" required class="input-field">
+        <input type="text" id="name" name="name" value="{{ data.name if data is defined and data else '' }}" required class="input-field">
     </div>
     <div class="form-group">
         <label for="email">Email *</label>
-        <input type="email" id="email" name="email" required class="input-field">
+        <input type="email" id="email" name="email" value="{{ data.email if data is defined and data else '' }}" required class="input-field">
     </div>
     <div class="form-group">
         <label for="phone">Phone</label>
-        <input type="tel" id="phone" name="phone" class="input-field">
+        <input type="tel" id="phone" name="phone" value="{{ data.phone if data is defined and data else '' }}" class="input-field">
     </div>
     <div class="form-group">
         <label for="department">Department</label>
         <select id="department" name="department" class="input-field">
             <option value="">Select Department</option>
-            <option value="CSE">Computer Science</option>
-            <option value="ECE">Electronics</option>
-            <option value="EE">Electrical</option>
-            <option value="ME">Mechanical</option>
-            <option value="CE">Civil</option>
-            <option value="IT">Information Technology</option>
+            <option value="CSE" {{ 'selected' if data is defined and data and data.department == 'CSE' }}>Computer Science</option>
+            <option value="ECE" {{ 'selected' if data is defined and data and data.department == 'ECE' }}>Electronics</option>
+            <option value="EE" {{ 'selected' if data is defined and data and data.department == 'EE' }}>Electrical</option>
+            <option value="ME" {{ 'selected' if data is defined and data and data.department == 'ME' }}>Mechanical</option>
+            <option value="CE" {{ 'selected' if data is defined and data and data.department == 'CE' }}>Civil</option>
+            <option value="IT" {{ 'selected' if data is defined and data and data.department == 'IT' }}>Information Technology</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">Register</button>

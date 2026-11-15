@@ -4,6 +4,10 @@
 {% block content %}
 <h1>Summary Reports</h1>
 
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('export_events') }}" class="btn btn-primary">Export All Events (CSV)</a>
+</div>
+
 <div class="stats-bar">
     <div class="stat-card">
         <span class="stat-number">{{ report.total_events }}</span>
@@ -25,24 +29,41 @@
 
 <div class="reports-grid">
     <div class="report-card">
-        <h3>Events by Category</h3>
+        <h3>Event Fill Rates</h3>
         <table class="data-table">
-            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+            <thead><tr><th>Event</th><th>Registered</th><th>Fill Rate</th><th>Status</th></tr></thead>
             <tbody>
-                {% for row in report.events_by_category %}
-                <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
+                {% for item in fill_rates %}
+                <tr>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.registered }}/{{ item.max }}</td>
+                    <td>{{ item.fill_rate }}%</td>
+                    <td><span class="status-{{ 'confirmed' if item.status == 'Open' else 'waitlisted' }}">{{ item.status }}</span></td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
     <div class="report-card">
-        <h3>Top Events by Registrations</h3>
+        <h3>Popular Time Slots</h3>
         <table class="data-table">
-            <thead><tr><th>Event</th><th>Registrations</th></tr></thead>
+            <thead><tr><th>Time Slot</th><th>Events</th></tr></thead>
             <tbody>
-                {% for row in report.top_events %}
-                <tr><td>{{ row.title }}</td><td>{{ row.reg_count }}</td></tr>
+                {% for slot, count in time_slots %}
+                <tr><td>{{ slot }}</td><td>{{ count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-card">
+        <h3>Organizer Stats</h3>
+        <table class="data-table">
+            <thead><tr><th>Organizer</th><th>Events</th><th>Registrations</th></tr></thead>
+            <tbody>
+                {% for org, data in organizer_stats.items() %}
+                <tr><td>{{ org }}</td><td>{{ data.events }}</td><td>{{ data.total_registrations }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -51,10 +72,27 @@
     <div class="report-card">
         <h3>Venue Utilization</h3>
         <table class="data-table">
-            <thead><tr><th>Venue</th><th>Events Hosted</th></tr></thead>
+            <thead><tr><th>Venue</th><th>Events</th><th>Capacity</th><th>Features</th></tr></thead>
             <tbody>
-                {% for row in report.venue_usage %}
-                <tr><td>{{ row.name }}</td><td>{{ row.event_count }}</td></tr>
+                {% for v in venue_util %}
+                <tr>
+                    <td>{{ v.name }}</td>
+                    <td>{{ v.events_hosted }}</td>
+                    <td>{{ v.capacity }}</td>
+                    <td>{{ 'Projector ' if v.has_projector }}{{ 'AC' if v.has_ac }}{{ '-' if not v.has_projector and not v.has_ac }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-card">
+        <h3>Events by Category</h3>
+        <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+            <tbody>
+                {% for row in report.events_by_category %}
+                <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -294,6 +294,11 @@ The function checks `SELECT COUNT(*) FROM venues` first — if venues already ex
 - `redirect`, `url_for` — for sending users to a different page after form submission
 - `flash` — for showing one-time feedback messages (success, error, etc.)
 - `jsonify` — converts Python dicts to JSON for the API endpoint
+- `send_file` — for sending CSV file downloads to the browser
+- `validators` — input validation for forms (by Sumit)
+- `statistics_helper` — analytics functions for the reports page (by Sai)
+- `notifications` — email template generation on registration (by Aditya)
+- `export_csv` — CSV export for events and registrations (by Shivtej)
 
 **App setup:**
 ```python
@@ -324,7 +329,7 @@ Single event page. Looks up the event by ID — if not found, flashes an error a
 
 **`GET/POST /events/<id>/register` → `register_for_event(event_id)`**
 - GET: Shows the registration form (`register.html`)
-- POST: Reads form data (name, email, phone, department), calls `register_participant()`, flashes a success/waitlist/error message, redirects to the event detail page
+- POST: Reads form data (name, email, phone, department), validates input using `validators.validate_registration_data()` (shows field-specific errors if invalid), calls `register_participant()`, generates a confirmation email template via `notifications.generate_registration_email()`, flashes a success/waitlist/error message, redirects to the event detail page
 
 **`POST /events/<id>/cancel/<pid>` → `cancel_registration(event_id, participant_id)`**
 Cancels a registration and redirects back to the event detail page.
@@ -334,7 +339,7 @@ Admin dashboard. Shows all events in a table with edit/delete buttons, and all v
 
 **`GET/POST /admin/events/new` → `create_event()`**
 - GET: Shows empty event creation form with venue dropdown
-- POST: Reads form data, checks for venue scheduling conflicts. If conflict found, flashes error and re-shows the form. If clean, creates the event and redirects to admin panel.
+- POST: Reads form data, validates all fields using `validators.validate_event_data()` (title length, date format, time ordering, valid category, etc.). If validation fails, shows field-specific errors. Then checks for venue scheduling conflicts. If conflict found, flashes error and re-shows the form. If clean, creates the event and redirects to admin panel.
 
 **`GET/POST /admin/events/<id>/edit` → `edit_event(event_id)`**
 Same as create but pre-fills the form with existing data. On POST, checks venue conflicts (excluding the current event), updates the record.
@@ -343,10 +348,16 @@ Same as create but pre-fills the form with existing data. On POST, checks venue 
 Deletes the event and all its registrations, redirects to admin panel.
 
 **`GET/POST /admin/venues/new` → `create_venue()`**
-Form to add a new venue with name, location, capacity, and amenity checkboxes.
+Form to add a new venue with name, location, capacity, and amenity checkboxes. On POST, validates input using `validators.validate_venue_data()` before saving.
 
 **`GET /reports` → `reports()`**
-Renders summary statistics: total counts, events by category, top events, venue usage, registrations by department.
+Renders summary statistics: total counts, events by category, top events, venue usage, registrations by department. Also loads analytics from `statistics_helper` — event fill rates, popular time slots, organizer stats, and venue utilization with amenity details. Includes an "Export All Events (CSV)" button.
+
+**`GET /export/events` → `export_events()`**
+Uses `export_csv.export_all_events_summary()` to generate a CSV file and sends it as a download.
+
+**`GET /export/registrations/<id>` → `export_registrations(event_id)`**
+Uses `export_csv.export_event_registrations()` to generate a CSV of all participants for a specific event and sends it as a download. Accessible via "Export CSV" button on the event detail page.
 
 **`GET /api/events` → `api_events()`**
 REST API endpoint. Returns all events as JSON. Supports `?search=` and `?category=` query parameters. This is useful for external tools or AJAX calls.
@@ -469,11 +480,14 @@ On submission, POST request goes to the same URL. Flask processes it, calls `reg
 **Purpose:** Analytics dashboard at `/reports`.
 
 **Sections:**
-1. **Stats bar** — Same 4 stat cards as home page (events, participants, registrations, venues)
-2. **Reports grid** — 4 report cards, each with a data table:
+1. **Export button** — "Export All Events (CSV)" button that downloads a CSV summary
+2. **Stats bar** — Same 4 stat cards as home page (events, participants, registrations, venues)
+3. **Reports grid** — 6 report cards, each with a data table:
+   - Event Fill Rates — registered/max, percentage, and status (Open/Almost Full/Full) from `statistics_helper`
+   - Popular Time Slots — most used event time ranges from `statistics_helper`
+   - Organizer Stats — events and registrations per organizer from `statistics_helper`
+   - Venue Utilization — events hosted, capacity, and amenities from `statistics_helper`
    - Events by Category (e.g. technical: 2, cultural: 1, ...)
-   - Top Events by Registrations (most popular events)
-   - Venue Utilization (how many events each venue hosted)
    - Registrations by Department (which departments are most active)
 
 ---
@@ -689,9 +703,9 @@ Runs `python3 profiling/profile_app.py` with the same error-tolerant pattern.
 
 ---
 
-### 4.20 `export_csv.py` — CSV Export Utility (by Shivtej)
+### 4.20 `export_csv.py` — CSV Export Utility (by Shivtej) — *Integrated into app.py*
 
-**Purpose:** Exports event data and registration lists to CSV files for reporting, printing, or importing into Excel.
+**Purpose:** Exports event data and registration lists to CSV files for reporting, printing, or importing into Excel. Integrated into the web app via `/export/events` and `/export/registrations/<id>` routes — accessible through "Export CSV" buttons on the Reports page and Event Detail page.
 
 **Functions:**
 - `export_event_registrations(event_id)` — Exports all participants registered for a specific event. Creates a CSV with columns: Name, Email, Phone, Department, Role, Registered At, Status. File is named with the event title and timestamp (e.g. `Annual_Tech_Fest_2024_20240315_143022.csv`).
@@ -707,9 +721,9 @@ Files are saved to an `exports/` directory (auto-created).
 
 ---
 
-### 4.21 `statistics_helper.py` — Analytics Module (by Sai)
+### 4.21 `statistics_helper.py` — Analytics Module (by Sai) — *Integrated into app.py*
 
-**Purpose:** Provides computed analytics beyond what the basic report offers. Includes a text-based dashboard for terminal display.
+**Purpose:** Provides computed analytics beyond what the basic report offers. Includes a text-based dashboard for terminal display. Integrated into the web app's `/reports` page — fill rates, popular time slots, organizer stats, and venue utilization are all rendered in the browser.
 
 **Functions:**
 - `get_event_fill_rates()` — Calculates percentage of seats filled for each event. Returns fill rate, and labels events as "Full" (>=100%), "Almost Full" (>=80%), or "Open".
@@ -725,9 +739,9 @@ python statistics_helper.py   # prints the full dashboard
 
 ---
 
-### 4.22 `notifications.py` — Email Templates (by Aditya)
+### 4.22 `notifications.py` — Email Templates (by Aditya) — *Integrated into app.py*
 
-**Purpose:** Generates email content for various notification scenarios. Doesn't actually send emails (no SMTP) — it generates the text that would be sent.
+**Purpose:** Generates email content for various notification scenarios. Doesn't actually send emails (no SMTP) — it generates the text that would be sent. Integrated into the web app's registration flow — after a successful registration, the app generates a confirmation email template and flashes a message showing who the email would be sent to.
 
 **Functions:**
 - `generate_registration_email(event_id, name, email, status)` — Generates a confirmation or waitlist email with event details (date, time, venue, organizer).
@@ -751,9 +765,9 @@ python notifications.py       # prints sample emails
 
 ---
 
-### 4.23 `validators.py` — Input Validation Module (by Sumit)
+### 4.23 `validators.py` — Input Validation Module (by Sumit) — *Integrated into app.py*
 
-**Purpose:** Validates user input before it reaches the database. Catches bad data early with clear error messages.
+**Purpose:** Validates user input before it reaches the database. Catches bad data early with clear error messages. Integrated into the web app's form handlers — registration, event creation, and venue creation all run server-side validation before saving to the database, and display field-specific error messages via flash alerts.
 
 **Custom exception:** `ValidationError(field, message)` — carries which field failed and why.
 
@@ -1083,10 +1097,10 @@ Things we'd add given more time:
 | Search/Filtering | Keyword search, category filter, date range filter | database.py, events.html |
 | Registration | Register with waitlisting, cancel, duplicate prevention | database.py, register.html |
 | Admin controls | Full CRUD for events and venues, conflict detection | admin.html, event_form.html, venue_form.html |
-| Reports/Analytics | Aggregated statistics, fill rates, utilization | reports.html, database.py, statistics_helper.py |
-| CSV Export | Export events and registrations to CSV files | export_csv.py |
-| Email Notifications | Registration, cancellation, and reminder templates | notifications.py |
-| Input Validation | Email, phone, event, registration, venue validators | validators.py |
+| Reports/Analytics | Aggregated statistics, fill rates, time slots, organizer stats, venue utilization — all rendered in web UI | reports.html, database.py, statistics_helper.py, app.py |
+| CSV Export | Export events and registrations to CSV via download buttons in the web app | export_csv.py, app.py, reports.html, event_detail.html |
+| Email Notifications | Generates confirmation/waitlist email on registration, shown as flash message | notifications.py, app.py |
+| Input Validation | Server-side validation on all forms (registration, event, venue) with field-specific errors | validators.py, app.py |
 | Bash script | Automated setup, dependency install, test, profile | scripts/setup.sh |
 | Test cases | 35 tests with pytest (database + web routes) | tests/ |
 | Profiling | cProfile + individual benchmarks with timing | profiling/profile_app.py |

@@ -1,5 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 import database as db
+import validators as val
+import statistics_helper as stats
+import notifications as notif
+import export_csv as exporter
 
 app = Flask(__name__)
 app.secret_key = 'campus-event-mgmt-secret-key-2024'
@@ -65,6 +69,12 @@ def register_for_event(event_id):
             'role': 'attendee'
         }
 
+        errors = val.validate_registration_data(participant_data)
+        if errors:
+            for err in errors:
+                flash(f'{err.field}: {err.message}', 'error')
+            return render_template('register.html', event=event, data=participant_data)
+
         pid, status = db.register_participant(event_id, participant_data)
         if pid is None:
             flash(status, 'error')
@@ -72,6 +82,9 @@ def register_for_event(event_id):
             flash('Event is full. You have been added to the waitlist.', 'warning')
         else:
             flash('Registration successful!', 'success')
+            email = notif.generate_registration_email(event_id, participant_data['name'], participant_data['email'], status)
+            if email:
+                flash(f'Confirmation email would be sent to {email["to"]}', 'info')
         return redirect(url_for('event_detail', event_id=event_id))
 
     return render_template('register.html', event=event)
@@ -108,6 +121,12 @@ def create_event():
             'category': request.form.get('category', 'general'),
             'max_participants': int(request.form.get('max_participants', 100))
         }
+
+        errors = val.validate_event_data(data)
+        if errors:
+            for err in errors:
+                flash(f'{err.field}: {err.message}', 'error')
+            return render_template('event_form.html', venues=venues, data=data, editing=False)
 
         conflicts = db.check_venue_conflict(
             data['venue_id'], data['event_date'],
@@ -176,10 +195,18 @@ def create_venue():
         data = {
             'name': request.form['name'],
             'location': request.form['location'],
-            'capacity': int(request.form['capacity']),
+            'capacity': request.form['capacity'],
             'has_projector': 1 if request.form.get('has_projector') else 0,
             'has_ac': 1 if request.form.get('has_ac') else 0,
         }
+
+        errors = val.validate_venue_data(data)
+        if errors:
+            for err in errors:
+                flash(f'{err.field}: {err.message}', 'error')
+            return render_template('venue_form.html', data=data)
+
+        data['capacity'] = int(data['capacity'])
         db.create_venue(data)
         flash('Venue added successfully!', 'success')
         return redirect(url_for('admin_panel'))
@@ -192,7 +219,28 @@ def create_venue():
 @app.route('/reports')
 def reports():
     report = db.get_summary_report()
-    return render_template('reports.html', report=report)
+    fill_rates = stats.get_event_fill_rates()
+    time_slots = stats.get_popular_time_slots()
+    organizer_stats = stats.get_organizer_stats()
+    venue_util = stats.get_venue_utilization()
+    return render_template('reports.html', report=report, fill_rates=fill_rates,
+                           time_slots=time_slots, organizer_stats=organizer_stats,
+                           venue_util=venue_util)
+
+
+@app.route('/export/events')
+def export_events():
+    filepath = exporter.export_all_events_summary()
+    return send_file(filepath, as_attachment=True)
+
+
+@app.route('/export/registrations/<int:event_id>')
+def export_registrations(event_id):
+    filepath = exporter.export_event_registrations(event_id)
+    if not filepath:
+        flash('Event not found or no registrations.', 'error')
+        return redirect(url_for('events_list'))
+    return send_file(filepath, as_attachment=True)
 
 
 # ---- API endpoints for search/filter ----
