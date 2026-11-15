@@ -18,7 +18,7 @@ Design and implement a system that can:
 - Expose a REST API for programmatic access
 
 ### Team
-- Swasti (Lead Developer)
+- Swasti 
 - Shivtej
 - Sai
 - Aditya
